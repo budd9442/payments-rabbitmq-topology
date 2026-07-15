@@ -1,0 +1,129 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: Vhost
+metadata:
+  name: vhost-payments
+  namespace: payments-system
+spec:
+  name: vhost_payments
+  rabbitmqClusterReference:
+    name: rabbitmq-prod
+    namespace: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: User
+metadata:
+  name: payments-svc-user
+  namespace: payments-system
+spec:
+  rabbitmqClusterReference:
+    name: rabbitmq-prod
+    namespace: rabbitmq
+  importCredentialsSecret:
+    name: payments-svc-credentials
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Permission
+metadata:
+  name: payments-svc-permission
+  namespace: payments-system
+spec:
+  rabbitmqClusterReference:
+    name: rabbitmq-prod
+    namespace: rabbitmq
+  user: payments-svc-user
+  vhost: vhost_payments
+  permissions:
+    configure: ".*"
+    write: ".*"
+    read: ".*"
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Exchange
+metadata:
+  name: payment-commands
+  namespace: payments-system
+spec:
+  name: payment_commands
+  vhost: vhost_payments
+  type: direct
+  durable: true
+  rabbitmqClusterReference:
+    name: rabbitmq-prod
+    namespace: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: stripe-processing-q
+  namespace: payments-system
+spec:
+  name: stripe_processing_q
+  vhost: vhost_payments
+  type: quorum
+  durable: true
+  rabbitmqClusterReference:
+    name: rabbitmq-prod
+    namespace: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: payment-failure-dlq
+  namespace: payments-system
+spec:
+  name: payment_failure_dlq
+  vhost: vhost_payments
+  type: quorum
+  durable: true
+  rabbitmqClusterReference:
+    name: rabbitmq-prod
+    namespace: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Policy
+metadata:
+  name: payments-dlx-policy
+  namespace: payments-system
+spec:
+  name: enforce_dlx_and_retries
+  vhost: vhost_payments
+  pattern: "^stripe_processing_q$"
+  applyTo: queues
+  definition:
+    dead-letter-exchange: "payment_commands"
+    dead-letter-routing-key: "payment_failure_dlq"
+    delivery-limit: 3
+    message-ttl: 60000
+  rabbitmqClusterReference:
+    name: rabbitmq-prod
+    namespace: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Binding
+metadata:
+  name: stripe-processing-binding
+  namespace: payments-system
+spec:
+  vhost: vhost_payments
+  source: payment_commands
+  destination: stripe_processing_q
+  destinationType: queue
+  routingKey: "stripe"
+  rabbitmqClusterReference:
+    name: rabbitmq-prod
+    namespace: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Binding
+metadata:
+  name: payment-failure-dlq-binding
+  namespace: payments-system
+spec:
+  vhost: vhost_payments
+  source: payment_commands
+  destination: payment_failure_dlq
+  destinationType: queue
+  routingKey: "payment_failure_dlq"
+  rabbitmqClusterReference:
+    name: rabbitmq-prod
+    namespace: rabbitmq
