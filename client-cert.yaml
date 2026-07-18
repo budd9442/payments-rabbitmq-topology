@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: rabbitmq-client-cert
+  namespace: payments-system
+spec:
+  secretName: rabbitmq-client-cert
+  commonName: payments-svc-user.rabbitmq.svc.cluster.local
+  usages:
+    - client auth
+  issuerRef:
+    name: vault-issuer
+    kind: Issuer
+    group: cert-manager.io

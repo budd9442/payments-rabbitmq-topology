@@ -4,5 +4,11 @@ namespace: payments-system
 
 resources:
 - namespace.yaml
-- vault-static-secret.yaml
 - topology.yaml
+- credentials.yaml
+- rbac.yaml
+- vault-issuer.yaml
+- client-cert.yaml
+- serviceaccount.yaml
+- deployment.yaml
+

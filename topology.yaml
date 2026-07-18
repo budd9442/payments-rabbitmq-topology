@@ -5,6 +5,9 @@ metadata:
   namespace: payments-system
 spec:
   name: vhost_payments
+  limits:
+    connections: 1000
+    queues: 100
   rabbitmqClusterReference:
     name: rabbitmq-prod
     namespace: rabbitmq
@@ -30,7 +33,7 @@ spec:
   rabbitmqClusterReference:
     name: rabbitmq-prod
     namespace: rabbitmq
-  user: payments-svc-user
+  user: payments-svc-user.rabbitmq.svc.cluster.local
   vhost: vhost_payments
   permissions:
     configure: ".*"
