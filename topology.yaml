@@ -13,18 +13,6 @@ spec:
     namespace: rabbitmq
 ---
 apiVersion: rabbitmq.com/v1beta1
-kind: User
-metadata:
-  name: payments-svc-user
-  namespace: payments-system
-spec:
-  rabbitmqClusterReference:
-    name: rabbitmq-prod
-    namespace: rabbitmq
-  importCredentialsSecret:
-    name: payments-svc-credentials
----
-apiVersion: rabbitmq.com/v1beta1
 kind: Permission
 metadata:
   name: payments-svc-permission
@@ -33,7 +21,7 @@ spec:
   rabbitmqClusterReference:
     name: rabbitmq-prod
     namespace: rabbitmq
-  user: payments-svc-user.rabbitmq.svc.cluster.local
+  user: payments-svcuser.rabbitmq.svc.cluster.local
   vhost: vhost_payments
   permissions:
     configure: ".*"
