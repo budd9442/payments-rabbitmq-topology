@@ -12,6 +12,28 @@ spec:
     name: rabbitmq-prod
     namespace: rabbitmq
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: payments-svcuser-credentials
+  namespace: payments-system
+type: Opaque
+stringData:
+  username: payments-svcuser.rabbitmq.svc.cluster.local
+  passwordHash: ""
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: User
+metadata:
+  name: payments-svcuser
+  namespace: payments-system
+spec:
+  rabbitmqClusterReference:
+    name: rabbitmq-prod
+    namespace: rabbitmq
+  importCredentialsSecret:
+    name: payments-svcuser-credentials
+---
 apiVersion: rabbitmq.com/v1beta1
 kind: Permission
 metadata:
